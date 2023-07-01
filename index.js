@@ -7,10 +7,9 @@ import crypto from "crypto"
 
 dotenv.config()
 
-
 const app = express()
 
-const secretKey = process.env.SECRET_KEY_CRYPTO || ""
+const secretKey = process.env.SECRET_KEY_CRYPTO
 
 
 app.post("/new-customer", async (req, res) => {
@@ -22,8 +21,8 @@ app.post("/new-customer", async (req, res) => {
     .createHmac('sha256', secretKey)
     .update(encryptedBody, 'utf8', 'hex')
     .digest('base64')
+
     if (hash === hmac) {
-        console.log(body)
         const client = new SMTPClient({
             user: process.env.SMTP_USER,
             password: process.env.SMTP_PASSWORD,
@@ -33,18 +32,18 @@ app.post("/new-customer", async (req, res) => {
         });
     
         try {
-            const message = await client.sendAsync({
-                text: '⌚️ De la part de l\'équipe IOAKERS, \n Tu nous fais confiance alors on tient à te remercier personnellement ! \n Voici ce code promo, FIRST10, qui te permettras d\'avoir -10% sur ta première commande.',
-                from: "ioakerswatches@gmail.com",
-                to: body.email ?? "matthias.cartel@gmail.com",
-                subject: '🤩 Pour te remercier de ta fidélité !',
+            // send customized email with your favorite tool
+            await client.sendAsync({
                 
+                text: 'This text will the body of the mail',
+                from: process.env.SMTP_USER,
+                to: body.email ?? process.env.SMTP_USER,
+                subject: 'This text will be the title of the mail',
             });
-            console.log(message);
         } catch (err) {
             console.error(err);
         }
-        res.send(req.body)
+        res.sendStatus("200")
       } else {
         console.log('Danger! Not from Shopify!')
         res.sendStatus(403)
